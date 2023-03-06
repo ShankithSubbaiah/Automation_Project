@@ -1,44 +1,28 @@
-#!/bin/bash
+sudo apt update -y
+echo "packages updated successfully" 
 
-# Variables
-name="shankith"
-s3_bucket="upgrad-shankith"
+apache2 --version
+apt-get install apache2
+echo "apache2 installed successfully"
 
-# update the ubuntu repositories
-apt update -y
+systemctl list-units --type=service --state=running
+echo "apache2 server is enabled and running"
 
-# Check if apache2 is installed
-if [[ apache2 != $(dpkg --get-selections apache2 | awk '{print $1}') ]]; then
-	#statements
-	apt install apache2 -y
-fi
-
-# Ensures that apache2 service is running
-running=$(systemctl status apache2 | grep active | awk '{print $3}' | tr -d '()')
-if [[ running != ${running} ]]; then
-	#statements
-	systemctl start apache2
-fi
-
-# Ensures apache2 Service is enabled 
-enabled=$(systemctl is-enabled apache2 | grep "enabled")
-if [[ enabled != ${enabled} ]]; then
-	#statements
-	systemctl enable apache2
-fi
-
-# Creating file name
+name=$'pradyumn'
 timestamp=$(date '+%d%m%Y-%H%M%S')
+tar cvf- $name-httpd-logs-$timestamp.tar /var/log/apache2/access.log /var/log/apache2/error.log
+echo "tar file created"
 
-# Create tar archive of apache2 access and error logs
-cd /var/log/apache2
-tar -cf /tmp/${name}-httpd-logs-${timestamp}.tar *.log
+mv $name-httpd-logs-$timestamp.tar /tmp/$name-httpd-logs-$timestamp.tar
+echo "tar moved to /tmp/ directory"
 
-# copy logs to s3 bucket
-if [[ -f /tmp/${name}-httpd-logs-${timestamp}.tar ]]; then
-	#statements
-	aws s3 cp /tmp/${name}-httpd-logs-${timestamp}.tar s3://${s3_bucket}/${name}-httpd-logs-${timestamp}.tar
-fi
+sudo apt update
+sudo apt install awscli
+echo "awscli installed"
+
+aws s3 \
+cp /tmp/$name-httpd-logs-$timestamp.tar \
+s3://upgrad-pradyumn/$name-httpd-logs-$timestamp.tarfi
 
 docroot="/var/www/html"
 # Check if inventory file exists
@@ -58,4 +42,4 @@ fi
 if [[ ! -f /etc/cron.d/automation ]]; then
 	#statements
 	echo "* * * * * root /root/automation.sh" >> /etc/cron.d/automation
-fi
+f
